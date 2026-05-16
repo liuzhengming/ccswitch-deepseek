@@ -82,3 +82,4 @@ const server = http.createServer(async (req, res) => {
   res.writeHead(404); res.end(JSON.stringify({ error: { message: "not found: " + url.pathname } }));
 });
 server.listen(PORT, "127.0.0.1", () => { console.log(""); log.ok("ccswitch-deepseek started"); log.info("http://127.0.0.1:" + PORT + "/v1/responses"); log.info("model: " + MODEL); if (!DEEPSEEK_API_KEY) log.warn("api_key not set"); console.log(""); });
+

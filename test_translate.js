@@ -1,15 +1,12 @@
-import { test } from "node:test";
+﻿import { test } from "node:test";
 import assert from "node:assert/strict";
-import { extractText, extractImages, translateMessages, translateTools, translateToolChoice, lastUserText } from "./lib/translate.js";
+import { extractText, translateMessages, translateTools, translateToolChoice, lastUserText } from "./lib/translate.js";
 
 test("extractText - string", () => { assert.equal(extractText("hello"), "hello"); });
 test("extractText - non-array", () => { assert.equal(extractText({a:1}), ""); assert.equal(extractText(123), ""); });
 test("extractText - content array", () => { assert.equal(extractText([{type:"input_text",text:"a"},{type:"output_text",text:"b"}]), "ab"); });
 test("extractText - ignore non-text", () => { assert.equal(extractText([{type:"input_image"},{type:"input_text",text:"t"}]), "t"); });
 test("extractText - single object", () => { assert.equal(extractText({type:"text",text:"ok"}), "ok"); });
-test("extractImages - empty", () => { assert.deepEqual(extractImages(null), []); assert.deepEqual(extractImages("s"), []); });
-test("extractImages - image_url", () => { const r = extractImages([{type:"input_image",image_url:"data:..."}]); assert.equal(r.length, 1); assert.equal(r[0].image_url, "data:..."); });
-test("extractImages - url variant", () => { const r = extractImages([{type:"input_image",url:"http://x"}]); assert.equal(r.length, 1); assert.equal(r[0].image_url.url, "http://x"); });
 
 test("translateMessages - string input", () => { const r = translateMessages("hello"); assert.equal(r.messages.length, 1); assert.equal(r.messages[0].role, "user"); });
 test("translateMessages - empty string", () => { assert.equal(translateMessages("   ").messages.length, 0); });
@@ -18,7 +15,6 @@ test("translateMessages - developer -> system", () => { assert.equal(translateMe
 test("translateMessages - function_call merge", () => { const r = translateMessages([{role:"assistant",content:[]},{type:"function_call",call_id:"c1",name:"f",arguments:"{}"},{type:"function_call",call_id:"c2",name:"g",arguments:"{}"}]); assert.equal(r.messages.length, 1); assert.equal(r.messages[0].tool_calls.length, 2); });
 test("translateMessages - function_call_output", () => { const r = translateMessages([{type:"function_call_output",call_id:"c1",output:{type:"text",text:"ok"}}]); assert.equal(r.messages[0].role, "tool"); assert.equal(r.messages[0].content, "ok"); });
 test("translateMessages - reasoning skipped", () => { const r = translateMessages([{role:"user",content:"q"},{type:"reasoning",reasoning_content:"t"}]); assert.equal(r.messages.length, 1); assert.equal(r.stats.skipped.reasoning, 1); });
-test("translateMessages - image input", () => { const r = translateMessages([{role:"user",content:[{type:"input_text",text:"desc"},{type:"input_image",image_url:"d"}]}]); assert.equal(r.messages[0].role, "user"); assert.equal(Array.isArray(r.messages[0].content), true); });
 test("translateMessages - rc stripped (default)", () => { const r = translateMessages([{role:"assistant",content:"a",reasoning_content:"t"}]); assert.equal(r.messages[0].reasoning_content, undefined); assert.equal(r.stats.strippedReasoningContent, 1); });
 test("translateMessages - rc kept", () => { const r = translateMessages([{role:"assistant",content:"a",reasoning_content:"t"}], {keepReasoningContent:true}); assert.equal(r.messages[0].reasoning_content, "t"); assert.equal(r.stats.preservedReasoningContent, 1); assert.equal(r.stats.strippedReasoningContent, 0); });
 test("translateMessages - file+audio stats", () => { const r = translateMessages([{role:"user",content:[{type:"input_text",text:"hi"},{type:"input_file"},{type:"input_audio"}]}]); assert.equal(r.stats.skipped.file, 1); assert.equal(r.stats.skipped.audio, 1); });
@@ -41,3 +37,4 @@ test("lastUserText - found", () => { assert.equal(lastUserText([{role:"user",con
 test("lastUserText - not found", () => { assert.equal(lastUserText([]), ""); });
 
 console.log("\nall tests passed!");
+
