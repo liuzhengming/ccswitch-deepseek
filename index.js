@@ -13,6 +13,7 @@ const PORT = parseInt(process.env.port) || 11435;
 const DEFAULT_MODEL = process.env.model ?? "deepseek-v4-pro";
 const BASE_URL = (process.env.base_url ?? "https://api.deepseek.com").replace(/\/$/, "");
 async function readBody(req) { const chunks = []; for await (const chunk of req) chunks.push(chunk); return Buffer.concat(chunks).toString(); }
+function resolveModel(clientModel) { if (!clientModel || /^gpt/i.test(clientModel)) return DEFAULT_MODEL; return clientModel; }
 
 function buildChatBody(body) {
   const stream = body.stream !== false;
@@ -37,7 +38,7 @@ function buildChatBody(body) {
   let instructions = body.instructions ? body.instructions + IDENTITY : IDENTITY.trim();
   messages.unshift({ role: "system", content: instructions });
 
-  const chatBody = { model: body.model || DEFAULT_MODEL, messages, stream };
+  const chatBody = { model: resolveModel(body.model), messages, stream };
   if (effectiveThinking) { chatBody.thinking = { type: "enabled" }; }
   else { chatBody.thinking = { type: "disabled" }; }
 
